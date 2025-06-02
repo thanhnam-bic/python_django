@@ -43,6 +43,7 @@ class Supplier(models.Model):
     update_at = models.DateTimeField(auto_now=True)
 
 class Asset(models.Model):
+    id = models.CharField(max_length=6, primary_key=True)
     assetname = models.CharField(max_length=30)
     serial = models.CharField(max_length=30)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='assets')
