@@ -26,7 +26,7 @@ def xoa_tai_san(request, id):
 # tạo phương thức get lấy danh sách và in dánh sách khi test trên postman lúc truy cập đường link http://127.0.0.1:8000/qlts/api/taisan 
     # API GET - Lấy danh sách tất cả tài sản
 @require_http_methods(["GET"])
-def get_lay_tat_ca_taisan(request):
+def get_lay_tat_ca_taisan1(request):
     try:
         # Lấy tất cả tài sản từ database
         taisan_list = TaiSan.objects.all()
