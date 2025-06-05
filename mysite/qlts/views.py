@@ -26,7 +26,7 @@ def xoa_tai_san(request, id):
 # tạo phương thức get lấy danh sách và in dánh sách khi test trên postman lúc truy cập đường link http://127.0.0.1:8000/qlts/api/taisan 
     # API GET - Lấy danh sách tất cả tài sản
 @require_http_methods(["GET"])
-def get_all_taisan(request):
+def get_tat_ca_taisan(request):
     try:
         # Lấy tất cả tài sản từ database
         taisan_list = TaiSan.objects.all()
@@ -84,16 +84,14 @@ def get_all_taisan(request):
             data.append(taisan_data)
         
         return JsonResponse({
-            'success': True,
-            'message': 'Lấy danh sách tài sản thành công',
-            'danh_sach_display': danh_sach_display,
-            'count': len(data),
-            'data': data
+            'Thông báo': 'Lấy danh sách tài sản thành công',
+            'Danh sách': danh_sach_display,
+            'Tài sản có tổng cộng': len(data),
+            'Dữ liệu gồm có': data
         }, status=200)
         
     except Exception as e:
         return JsonResponse({
-            'success': False,
-            'message': f'Lỗi khi lấy danh sách tài sản: {str(e)}',
-            'data': []
+            'Thông Báo': f'Lỗi khi lấy danh sách tài sản: {str(e)}',
+            'dữ liệu': []
         }, status=500)
