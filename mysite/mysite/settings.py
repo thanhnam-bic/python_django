@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "manage_assets.apps.ManageAssetsConfig",  # Custom app for managing assets
+    "qlts.apps.CauHinhQuanLyTaiSan",  # Custom app for managing assets
 ]
 
 MIDDLEWARE = [
