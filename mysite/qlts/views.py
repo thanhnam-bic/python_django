@@ -32,25 +32,25 @@ def get_tat_ca_taisan(request):
         taisan_list = TaiSan.objects.all()
         
         # Tạo danh sách hiển thị đẹp
-        danh_sach_display = []
-        danh_sach_display.append("=" * 80)
-        danh_sach_display.append("DANH SÁCH TẤT CẢ TÀI SẢN")
-        danh_sach_display.append("=" * 80)
-        danh_sach_display.append(f"Tổng số tài sản: {taisan_list.count()}")
-        danh_sach_display.append("-" * 80)
+        #danh_sach_display = []
+        #danh_sach_display.append("=" * 80)
+        #danh_sach_display.append("DANH SÁCH TẤT CẢ TÀI SẢN")
+        #danh_sach_display.append("=" * 80)
+        #danh_sach_display.append(f"Tổng số tài sản: {taisan_list.count()}")
+        #danh_sach_display.append("-" * 80)
         
-        for i, taisan in enumerate(taisan_list, 1):
-            danh_sach_display.append(f"{i}. Mã tài sản: {taisan.ma_tai_san}")
-            danh_sach_display.append(f"   Tên tài sản: {taisan.ten_tai_san}")
-            danh_sach_display.append(f"   Số serial: {taisan.so_serial}")
-            danh_sach_display.append(f"   Giá mua: {taisan.gia_mua:,.0f} VND")
-            danh_sach_display.append(f"   Danh mục: {taisan.danh_muc.danh_muc if taisan.danh_muc else 'Chưa có'}")
-            danh_sach_display.append(f"   Nhân viên: {taisan.ma_nhan_vien.ma_nhan_vien if taisan.ma_nhan_vien else 'Chưa có'}")
-            danh_sach_display.append(f"   Nhà sản xuất: {taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else 'Chưa có'}")
-            danh_sach_display.append(f"   Nhà cung cấp: {taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else 'Chưa có'}")
-            danh_sach_display.append("-" * 80)
+        #for i, taisan in enumerate(taisan_list, 1):
+            #danh_sach_display.append(f"{i}. Mã tài sản: {taisan.ma_tai_san}")
+            #danh_sach_display.append(f"   Tên tài sản: {taisan.ten_tai_san}")
+            #danh_sach_display.append(f"   Số serial: {taisan.so_serial}")
+            #danh_sach_display.append(f"   Giá mua: {taisan.gia_mua:,.0f} VND")
+            #danh_sach_display.append(f"   Danh mục: {taisan.danh_muc.danh_muc if taisan.danh_muc else 'Chưa có'}")
+            #danh_sach_display.append(f"   Nhân viên: {taisan.ma_nhan_vien.ma_nhan_vien if taisan.ma_nhan_vien else 'Chưa có'}")
+            #danh_sach_display.append(f"   Nhà sản xuất: {taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else 'Chưa có'}")
+            #danh_sach_display.append(f"   Nhà cung cấp: {taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else 'Chưa có'}")
+            #danh_sach_display.append("-" * 80)
         
-        danh_sach_display.append("=" * 80)
+        #danh_sach_display.append("=" * 80)
         
         # Chuyển đổi dữ liệu thành dictionary để trả về chi tiết
         data = []
@@ -61,7 +61,7 @@ def get_tat_ca_taisan(request):
                 'so_serial': taisan.so_serial,
                 'gia_mua': float(taisan.gia_mua),
                 'danh_muc': {
-                    'danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
+                    'ten_danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
                     'loai': taisan.danh_muc.loai if taisan.danh_muc else None,
                     'so_luong': taisan.danh_muc.so_luong if taisan.danh_muc else None
                 } if taisan.danh_muc else None,
@@ -72,11 +72,11 @@ def get_tat_ca_taisan(request):
                     'email': taisan.ma_nhan_vien.email if taisan.ma_nhan_vien else None
                 } if taisan.ma_nhan_vien else None,
                 'nha_san_xuat': {
-                    'nha_san_xuat': taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else None,
+                    'ten_nha_san_xuat': taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else None,
                     'tai_san': taisan.nha_san_xuat.tai_san if taisan.nha_san_xuat else None
                 } if taisan.nha_san_xuat else None,
                 'nha_cung_cap': {
-                    'nha_cung_cap': taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else None,
+                    'ten_nha_cung_cap': taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else None,
                     'ten_lien_he': taisan.nha_cung_cap.ten_lien_he if taisan.nha_cung_cap else None,
                     'duong_dan': taisan.nha_cung_cap.duong_dan if taisan.nha_cung_cap else None
                 } if taisan.nha_cung_cap else None
@@ -84,14 +84,21 @@ def get_tat_ca_taisan(request):
             data.append(taisan_data)
         
         return JsonResponse({
-            'Thông báo': 'Lấy danh sách tài sản thành công',
-            'Danh sách': danh_sach_display,
-            'Tài sản có tổng cộng': len(data),
-            'Dữ liệu gồm có': data
+            'Thanh_cong': True,
+            'Thong_bao': 'Lấy danh sách tài sản thành công',
+            #'Danh sách': danh_sach_display,
+            'Tong_so_tai_san': len(data),
+            'Du_lieu': {
+            'Tai_san': data
+        }
         }, status=200)
         
     except Exception as e:
         return JsonResponse({
-            'Thông Báo': f'Lỗi khi lấy danh sách tài sản: {str(e)}',
-            'dữ liệu': []
-        }, status=500)
+        'Thanh_cong': False,
+        'Thong_bao': f'Lỗi khi lấy danh sách tài sản: {str(e)}',
+        'Du_lieu': {
+            'Tong_so_tai_san': 0,
+            'Tai_san': []
+        }
+    }, status=500)
