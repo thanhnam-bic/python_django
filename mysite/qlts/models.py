@@ -1,6 +1,5 @@
 from django.db import models
 
-# Create your models here.
 class ViTri(models.Model):
     vi_tri = models.CharField(max_length=150, primary_key=True)
     so_nguoi = models.IntegerField()
@@ -8,6 +7,10 @@ class ViTri(models.Model):
     thanh_pho = models.CharField(max_length=150)
     tao_luc = models.DateTimeField(auto_now_add=True)
     cap_nhat_luc = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.vi_tri} - {self.thanh_pho}"
+
 
 class NhanVien(models.Model):
     ma_nhan_vien = models.CharField(max_length=10, primary_key=True)
@@ -17,18 +20,30 @@ class NhanVien(models.Model):
     vi_tri = models.ForeignKey(ViTri, on_delete=models.SET_NULL, null=True)
     email = models.CharField(max_length=150)
 
+    def __str__(self):
+        return f"{self.ho} {self.ten} ({self.ma_nhan_vien})"
+
+
 class DanhMuc(models.Model):
     danh_muc = models.CharField(max_length=150, primary_key=True)
     loai = models.CharField(max_length=150)
     so_luong = models.IntegerField()
-    tao_luc = models.DateTimeField(auto_now_add=True) 
+    tao_luc = models.DateTimeField(auto_now_add=True)
     cap_nhat_luc = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.danh_muc} ({self.loai})"
+
 
 class NhaSanXuat(models.Model):
     nha_san_xuat = models.CharField(max_length=150, primary_key=True)
     tai_san = models.IntegerField()
     tao_luc = models.DateTimeField(auto_now_add=True)
     cap_nhat_luc = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.nha_san_xuat
+
 
 class NhaCungCap(models.Model):
     nha_cung_cap = models.CharField(max_length=150, primary_key=True)
@@ -37,6 +52,10 @@ class NhaCungCap(models.Model):
     tai_san = models.IntegerField()
     tao_luc = models.DateTimeField(auto_now_add=True)
     cap_nhat_luc = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.nha_cung_cap} - {self.ten_lien_he}"
+
 
 class TaiSan(models.Model):
     ma_tai_san = models.CharField(max_length=10, primary_key=True)
@@ -48,4 +67,5 @@ class TaiSan(models.Model):
     nha_cung_cap = models.ForeignKey(NhaCungCap, on_delete=models.SET_NULL, null=True)
     gia_mua = models.DecimalField(max_digits=150, decimal_places=2)
 
-
+    def __str__(self):
+        return f"{self.ten_tai_san} ({self.ma_tai_san})"

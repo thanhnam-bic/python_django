@@ -7,3 +7,9 @@ Django - Python
 4. Chấp nhận thay đổi DB: py manage.py migrate
 
 Admin page: http://127.0.0.1:8000/admin/
+
+## Lệnh migrate data cho các models
+
+```bash
+python manage.py shell < insert_data.py 
+```
