@@ -15,11 +15,29 @@ def xoa_tai_san(request, id):
         try:
             asset = TaiSan.objects.get(pk=id)
             asset.delete()
-            return JsonResponse({'message': 'Xóa tài sản thành công', 'ma_tai_san': id})
+            return JsonResponse({
+                "thanh_cong": True,
+                "thong_bao": "Xóa tài sản thành công.",
+                "du_lieu": {
+                    "ma_tai_san": id
+                }
+            })
         except TaiSan.DoesNotExist:
-            return JsonResponse({'error': 'Tài sản không tồn tại', 'ma_tai_san': id}, status=404)
+            return JsonResponse({
+                "success": False,
+                "message": "Không tìm thấy tài nguyên.",
+                "errors": {
+                    "id": "Không tồn tại ID này"
+                }
+            }, status=404)
     else:
-        return JsonResponse({'error': 'Chỉ hỗ trợ phương thức DELETE'}, status=405)
+        return JsonResponse({
+            "success": False,
+            "message": "Không hỗ trợ phương thức này.",
+            "errors": {
+                "method": "Chỉ hỗ trợ phương thức DELETE"
+            }
+        }, status=405)
 
 #API GET: Lấy thông tin chi tiết của 1 tài sản theo ID  
 @csrf_exempt
