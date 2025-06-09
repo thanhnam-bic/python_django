@@ -5,26 +5,41 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.views.decorators.http import require_http_methods
 
-
+# View index - Trang chủ của ứng dụng
 def index(request):
-    print(">> Đã vào view index")
     return HttpResponse("Xin chào. Bạn đã đến app QLTS")
 
+# API DELETE - Xóa tài sản theo ID
 @csrf_exempt
+@require_http_methods(["DELETE"])
 def xoa_tai_san(request, id):
-    if request.method == 'DELETE':
         try:
             asset = TaiSan.objects.get(pk=id)
             asset.delete()
-            return JsonResponse({'message': 'Xóa tài sản thành công', 'ma_tai_san': id})
+            return JsonResponse({
+                "thanh_cong": True,
+                "thong_bao": "Xóa tài sản thành công.",
+                "du_lieu": {
+                    "ma_tai_san": id
+                }
+            })
         except TaiSan.DoesNotExist:
-            return JsonResponse({'error': 'Tài sản không tồn tại', 'ma_tai_san': id}, status=404)
-    else:
-        return JsonResponse({'error': 'Chỉ hỗ trợ phương thức DELETE'}, status=405)
+            return JsonResponse({
+                "thanh_cong": False,
+                "thong_bao": "Không tìm thấy tài nguyên.",
+                "loi": {
+                    "id": "Không tồn tại ID này"
+                }
+            }, status=404)
+        except Exception as e:
+            return JsonResponse({
+                "thanh_cong": False,
+                "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
+            }, status=500)
+      
 
-# Create your views here.
-# tạo phương thức get lấy danh sách và in dánh sách khi test trên postman lúc truy cập đường link http://127.0.0.1:8000/qlts/api/taisan 
-    # API GET - Lấy danh sách tất cả tài sản
+# API GET - Lấy danh sách tất cả tài sản
+@csrf_exempt
 @require_http_methods(["GET"])
 def get_tat_ca_taisan(request):
     try:
@@ -95,6 +110,7 @@ def get_tat_ca_taisan(request):
             'Thông Báo': f'Lỗi khi lấy danh sách tài sản: {str(e)}',
             'dữ liệu': []
         }, status=500)
+    
 @require_http_methods(["GET"])
 def tinh_taisan_moi_nhanvien(request):
     try:
