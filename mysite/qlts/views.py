@@ -8,11 +8,12 @@ import logging
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 
+
 # View index - Trang chủ của ứng dụng
 def index(request):
     return HttpResponse("Xin chào. Bạn đã đến app QLTS")
 
-# API DELETE - Xóa tài sản theo ID
+#1. API DELETE - Xóa tài sản theo ID (api/xoa_tai_san/<str:id>/)
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def xoa_tai_san(request, id):
@@ -39,80 +40,261 @@ def xoa_tai_san(request, id):
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
             }, status=500)
-      
+  #2. API PUT - Cập nhật tài sản theo ID
+@csrf_exempt
+@require_http_methods(["PUT"])
+def cap_nhat_tai_san(request, id):
+    try:
+        try:
+            asset = TaiSan.objects.get(pk=id)
+        except TaiSan.DoesNotExist:
+            return JsonResponse({
+                "thanh_cong": False,
+                "thong_bao": "Không tìm thấy tài sản.",
+                "loi": {"ma_tai_san": f"Tài sản với mã {id} không tồn tại"}
+            }, status=404)
+
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "thanh_cong": False,
+                "thong_bao": "Dữ liệu gửi lên không hợp lệ.",
+                "loi": {"json": "JSON không đúng định dạng"}
+            }, status=400)
+
+        # Cập nhật các trường thông thường
+        if 'ten_tai_san' in data:
+            asset.ten_tai_san = data['ten_tai_san']
+        if 'so_serial' in data:
+            asset.so_serial = data['so_serial']
+        if 'gia_mua' in data:
+            asset.gia_mua = data['gia_mua']
+
+        # Cập nhật các khóa ngoại nếu có
+        if 'danh_muc' in data:
+            try:
+                asset.danh_muc = DanhMuc.objects.get(pk=data['danh_muc'])
+            except DanhMuc.DoesNotExist:
+                return JsonResponse({
+                    "thanh_cong": False,
+                    "thong_bao": "Không tìm thấy danh mục.",
+                    "loi": {"danh_muc": f"Danh mục với mã {data['danh_muc']} không tồn tại"}
+                }, status=400)
+
+        if 'ma_nhan_vien' in data:
+            try:
+                asset.ma_nhan_vien = NhanVien.objects.get(pk=data['ma_nhan_vien'])
+            except NhanVien.DoesNotExist:
+                return JsonResponse({
+                    "thanh_cong": False,
+                    "thong_bao": "Không tìm thấy nhân viên.",
+                    "loi": {"ma_nhan_vien": f"Nhân viên với mã {data['ma_nhan_vien']} không tồn tại"}
+                }, status=400)
+
+        if 'nha_san_xuat' in data:
+            try:
+                asset.nha_san_xuat = NhaSanXuat.objects.get(pk=data['nha_san_xuat'])
+            except NhaSanXuat.DoesNotExist:
+                return JsonResponse({
+                    "thanh_cong": False,
+                    "thong_bao": "Không tìm thấy nhà sản xuất.",
+                    "loi": {"nha_san_xuat": f"Nhà sản xuất với mã {data['nha_san_xuat']} không tồn tại"}
+                }, status=400)
+
+        if 'nha_cung_cap' in data:
+            try:
+                asset.nha_cung_cap = NhaCungCap.objects.get(pk=data['nha_cung_cap'])
+            except NhaCungCap.DoesNotExist:
+                return JsonResponse({
+                    "thanh_cong": False,
+                    "thong_bao": "Không tìm thấy nhà cung cấp.",
+                    "loi": {"nha_cung_cap": f"Nhà cung cấp với mã {data['nha_cung_cap']} không tồn tại"}
+                }, status=400)
+
+        asset.save()
+        return JsonResponse({
+            "thanh_cong": True,
+            "thong_bao": "Cập nhật tài sản thành công",
+            "du_lieu": {
+                "ma_tai_san": asset.ma_tai_san,
+                "ten_tai_san": asset.ten_tai_san,
+                "so_serial": asset.so_serial,
+                "gia_mua": float(asset.gia_mua),
+                "danh_muc": {
+                    "ten_danh_muc": asset.danh_muc.danh_muc if asset.danh_muc else None
+                },
+                "nhan_vien": {
+                    "ma_nhan_vien": asset.ma_nhan_vien.ma_nhan_vien if asset.ma_nhan_vien else None
+                },
+                "nha_san_xuat": {
+                    "ten_nha_san_xuat": asset.nha_san_xuat.nha_san_xuat if asset.nha_san_xuat else None
+                },
+                "nha_cung_cap": {
+                    "ten_nha_cung_cap": asset.nha_cung_cap.nha_cung_cap if asset.nha_cung_cap else None
+                }
+            }
+        })
+    except Exception as e:
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
+        }, status=500)
+# API GET - Lấy chi tiết tài sản theo ID
+@csrf_exempt
+@require_http_methods(["GET"])
+def chi_tiet_tai_san(request, id):
+    try:
+        asset = TaiSan.objects.get(pk=id)
+        du_lieu = {
+            "ma_tai_san": asset.ma_tai_san,
+            "ten_tai_san": asset.ten_tai_san,
+            "so_serial": asset.so_serial,
+            "gia_mua": float(asset.gia_mua),
+            "danh_muc": {
+                "ten_danh_muc": asset.danh_muc.danh_muc if asset.danh_muc else None
+            },
+            "nhan_vien": {
+                "ma_nhan_vien": asset.ma_nhan_vien.ma_nhan_vien if asset.ma_nhan_vien else None
+            },
+            "nha_san_xuat": {
+                "ten_nha_san_xuat": asset.nha_san_xuat.nha_san_xuat if asset.nha_san_xuat else None
+            },
+            "nha_cung_cap": {
+                "ten_nha_cung_cap": asset.nha_cung_cap.nha_cung_cap if asset.nha_cung_cap else None
+            }
+        }
+        return JsonResponse({
+            "thanh_cong": True,
+            "thong_bao": "Lấy chi tiết tài sản thành công",
+            "du_lieu": du_lieu
+        })
+
+    except TaiSan.DoesNotExist:
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Không tìm thấy tài nguyên.",
+            "loi": {
+                "id": "Không tồn tại ID này"
+            }
+        }, status=404)
+    
+    except Exception:
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
+        }, status=500) 
 
 # API GET - Lấy danh sách tất cả tài sản
-@csrf_exempt
+# Thiết lập logging
+logger = logging.getLogger(__name__)
+
 @require_http_methods(["GET"])
 def get_tat_ca_taisan(request):
     try:
+        # Kiểm tra quyền truy cập (403)
+        # Ví dụ: Chỉ cho phép user đã đăng nhập hoặc có quyền cụ thể
+        '''if not request.user.is_authenticated:
+            return JsonResponse({
+                "thanh_cong": False,
+                "thong_bao": "Không có quyền truy cập tài nguyên này.",
+                "ma_loi": {
+                    "authentication": "Người dùng chưa được xác thực"
+                }
+            }, status=403)
+        '''
+        # Có thể thêm kiểm tra quyền cụ thể
+        # if not request.user.has_perm('mysite.view_taisan'):
+        #     return JsonResponse({
+        #         "thanh_cong": False,
+        #         "thong_bao": "Không có quyền truy cập tài nguyên này.",
+        #         "ma_loi": {
+        #             "permission": "Người dùng không có quyền xem tài sản"
+        #         }
+        #     }, status=403)
+
         # Lấy tất cả tài sản từ database
         taisan_list = TaiSan.objects.all()
         
-        # Tạo danh sách hiển thị đẹp
-        danh_sach_display = []
-        danh_sach_display.append("=" * 80)
-        danh_sach_display.append("DANH SÁCH TẤT CẢ TÀI SẢN")
-        danh_sach_display.append("=" * 80)
-        danh_sach_display.append(f"Tổng số tài sản: {taisan_list.count()}")
-        danh_sach_display.append("-" * 80)
-        
-        for i, taisan in enumerate(taisan_list, 1):
-            danh_sach_display.append(f"{i}. Mã tài sản: {taisan.ma_tai_san}")
-            danh_sach_display.append(f"   Tên tài sản: {taisan.ten_tai_san}")
-            danh_sach_display.append(f"   Số serial: {taisan.so_serial}")
-            danh_sach_display.append(f"   Giá mua: {taisan.gia_mua:,.0f} VND")
-            danh_sach_display.append(f"   Danh mục: {taisan.danh_muc.danh_muc if taisan.danh_muc else 'Chưa có'}")
-            danh_sach_display.append(f"   Nhân viên: {taisan.ma_nhan_vien.ma_nhan_vien if taisan.ma_nhan_vien else 'Chưa có'}")
-            danh_sach_display.append(f"   Nhà sản xuất: {taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else 'Chưa có'}")
-            danh_sach_display.append(f"   Nhà cung cấp: {taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else 'Chưa có'}")
-            danh_sach_display.append("-" * 80)
-        
-        danh_sach_display.append("=" * 80)
-        
+        # Kiểm tra nếu không có dữ liệu (200)
+        """if not taisan_list.exists():
+            return JsonResponse({
+                "thanh_cong": True,
+                "thong_bao": "Không tìm thấy tài nguyên.",
+                "ma_loi": {
+                    "data": "Không có tài sản nào trong hệ thống"
+                }
+            }, status=200)
+        """
         # Chuyển đổi dữ liệu thành dictionary để trả về chi tiết
         data = []
         for taisan in taisan_list:
-            taisan_data = {
-                'ma_tai_san': taisan.ma_tai_san,
-                'ten_tai_san': taisan.ten_tai_san,
-                'so_serial': taisan.so_serial,
-                'gia_mua': float(taisan.gia_mua),
-                'danh_muc': {
-                    'danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
-                    'loai': taisan.danh_muc.loai if taisan.danh_muc else None,
-                    'so_luong': taisan.danh_muc.so_luong if taisan.danh_muc else None
-                } if taisan.danh_muc else None,
-                'ma_nhan_vien': {
-                    'ma_nhan_vien': taisan.ma_nhan_vien.ma_nhan_vien if taisan.ma_nhan_vien else None,
-                    'ten': taisan.ma_nhan_vien.ten if taisan.ma_nhan_vien else None,
-                    'ho': taisan.ma_nhan_vien.ho if taisan.ma_nhan_vien else None,
-                    'email': taisan.ma_nhan_vien.email if taisan.ma_nhan_vien else None
-                } if taisan.ma_nhan_vien else None,
-                'nha_san_xuat': {
-                    'nha_san_xuat': taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else None,
-                    'tai_san': taisan.nha_san_xuat.tai_san if taisan.nha_san_xuat else None
-                } if taisan.nha_san_xuat else None,
-                'nha_cung_cap': {
-                    'nha_cung_cap': taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else None,
-                    'ten_lien_he': taisan.nha_cung_cap.ten_lien_he if taisan.nha_cung_cap else None,
-                    'duong_dan': taisan.nha_cung_cap.duong_dan if taisan.nha_cung_cap else None
-                } if taisan.nha_cung_cap else None
-            }
-            data.append(taisan_data)
+            try:
+                taisan_data = {
+                    'ma_tai_san': taisan.ma_tai_san,
+                    'ten_tai_san': taisan.ten_tai_san,
+                    'so_serial': taisan.so_serial,
+                    'gia_mua': float(taisan.gia_mua),
+                    'danh_muc': {
+                        'ten_danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
+                    } if taisan.danh_muc else None,
+                    'ma_nhan_vien': {
+                        'ma_nhan_vien': taisan.ma_nhan_vien.ma_nhan_vien if taisan.ma_nhan_vien else None,
+                    } if taisan.ma_nhan_vien else None,
+                    'nha_san_xuat': {
+                         'ten_nha_san_xuat': taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else None,
+                    } if taisan.nha_san_xuat else None,
+                    'nha_cung_cap': {
+                        'ten_nha_cung_cap': taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else None,
+                    } if taisan.nha_cung_cap else None
+                }
+                data.append(taisan_data)
+            except AttributeError as attr_error:
+                # Xử lý lỗi thuộc tính không tồn tại
+                logger.warning(f"Lỗi thuộc tính với tài sản {taisan.ma_tai_san}: {str(attr_error)}")
+                continue
         
+        # Trả về dữ liệu thành công
         return JsonResponse({
-            'Thông báo': 'Lấy danh sách tài sản thành công',
-            'Danh sách': danh_sach_display,
-            'Tài sản có tổng cộng': len(data),
-            'Dữ liệu gồm có': data
+            'thanh_cong': True,
+            'thong_bao': 'Lấy danh sách tài sản thành công',
+            'du_lieu': {
+                'tong_so_tai_san': len(data),
+                'tai_san': data
+            }
         }, status=200)
         
-    except Exception as e:
+    except PermissionDenied:
+        # Xử lý lỗi 403 - Forbidden
         return JsonResponse({
-            'Thông Báo': f'Lỗi khi lấy danh sách tài sản: {str(e)}',
-            'dữ liệu': []
+            "thanh_cong": False,
+            "thong_bao": "Không có quyền truy cập tài nguyên này.",
+            "ma_loi": {
+                "permission": "Người dùng không có quyền thực hiện thao tác này"
+            }
+        }, status=403)
+    
+    except Http404:
+        # Xử lý lỗi 404 - Not Found
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Không tìm thấy tài nguyên.",
+            "ma_loi": {
+                "resource": "Tài nguyên yêu cầu không tồn tại"
+            }
+        }, status=404)
+    
+    except Exception as e:
+        # Xử lý lỗi 500 - Internal Server Error
+        logger.error(f"Lỗi server khi lấy danh sách tài sản: {str(e)}")
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Lỗi máy chủ nội bộ.",
+            "ma_loi": {
+                "server": f"Lỗi hệ thống: {str(e)}"
+            }
         }, status=500)
+
     
 @require_http_methods(["GET"])
 def tinh_taisan_moi_nhanvien(request):
@@ -225,6 +407,7 @@ def tinh_taisan_moi_nhanvien(request):
             'thong_bao': f'Lỗi khi lấy thống kê: {str(e)}',
             'du_lieu': []
         }, status=500)
+# tạo tài sản mới
 # Thiết lập logging
 logger = logging.getLogger(__name__)
 
@@ -267,11 +450,11 @@ def tao_tai_san(request):
         # Kiểm tra các field bắt buộc
         required_fields = ['ma_tai_san', 'ten_tai_san', 'so_serial', 'gia_mua']
         missing_fields = {}
-        
+
         for field in required_fields:
             if field not in data or not data[field]:
                 missing_fields[field] = f'Trường {field} là bắt buộc và không được để trống'
-        
+
         if missing_fields:
             return JsonResponse({
                 'thanh_cong': False,
@@ -301,7 +484,7 @@ def tao_tai_san(request):
                     "ma_loi": {
                         "danh_muc": f'Danh mục "{data["danh_muc"]}" không tồn tại trong hệ thống'
                     }
-                }, status=404)
+                }, status=400)
 
         ma_nhan_vien = None
         if 'ma_nhan_vien' in data and data['ma_nhan_vien']:
@@ -314,7 +497,7 @@ def tao_tai_san(request):
                     "ma_loi": {
                         "ma_nhan_vien": f'Nhân viên "{data["ma_nhan_vien"]}" không tồn tại trong hệ thống'
                     }
-                }, status=404)
+                }, status=400)
 
         nha_san_xuat = None
         if 'nha_san_xuat' in data and data['nha_san_xuat']:
@@ -327,7 +510,7 @@ def tao_tai_san(request):
                     "ma_loi": {
                         "nha_san_xuat": f'Nhà sản xuất "{data["nha_san_xuat"]}" không tồn tại trong hệ thống'
                     }
-                }, status=404)
+                }, status=400)
 
         nha_cung_cap = None
         if 'nha_cung_cap' in data and data['nha_cung_cap']:
@@ -340,7 +523,7 @@ def tao_tai_san(request):
                     "ma_loi": {
                         "nha_cung_cap": f'Nhà cung cấp "{data["nha_cung_cap"]}" không tồn tại trong hệ thống'
                     }
-                }, status=404)
+                }, status=400)
 
         # Tạo tài sản mới
         try:
@@ -409,7 +592,7 @@ def tao_tai_san(request):
                 "permission": "Người dùng không có quyền thực hiện thao tác này"
             }
         }, status=403)
-    
+
     except Http404:
         # Xử lý lỗi 404 - Not Found
         return JsonResponse({
@@ -417,9 +600,9 @@ def tao_tai_san(request):
             "thong_bao": "Không tìm thấy tài nguyên.",
             "ma_loi": {
                 "resource": "Tài nguyên yêu cầu không tồn tại"
-            }
+                 }
         }, status=404)
-    
+
     except Exception as e:
         # Xử lý lỗi 500 - Internal Server Error
         logger.error(f"Lỗi server khi tạo tài sản: {str(e)}")
