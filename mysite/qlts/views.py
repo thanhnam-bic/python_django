@@ -7,12 +7,11 @@ from django.views.decorators.http import require_http_methods
 import logging
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
-
 # View index - Trang chủ của ứng dụng
 def index(request):
     return HttpResponse("Xin chào. Bạn đã đến app QLTS")
 
-# API DELETE - Xóa tài sản theo ID
+#1. API DELETE - Xóa tài sản theo ID (api/xoa_tai_san/<str:id>/)
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def xoa_tai_san(request, id):
@@ -39,7 +38,8 @@ def xoa_tai_san(request, id):
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
             }, status=500)
-  # API PUT - Cập nhật tài sản theo ID
+
+  #2. API PUT - Cập nhật tài sản theo ID
 @csrf_exempt
 @require_http_methods(["PUT"])
 def cap_nhat_tai_san(request, id):
@@ -405,4 +405,210 @@ def tinh_taisan_moi_nhanvien(request):
             'that_bai': False,
             'thong_bao': f'Lỗi khi lấy thống kê: {str(e)}',
             'du_lieu': []
+        }, status=500)
+# tạo tài sản mới
+# Thiết lập logging
+logger = logging.getLogger(__name__)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def tao_tai_san(request):
+    try:
+        '''# Kiểm tra quyền truy cập (403)
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                "thanh_cong": False,
+                "thong_bao": "Không có quyền truy cập tài nguyên này.",
+                "ma_loi": {
+                    "authentication": "Người dùng chưa được xác thực"
+                }
+            }, status=403)
+        '''
+        # Kiểm tra quyền tạo tài sản
+        # if not request.user.has_perm('mysite.add_taisan'):
+        #     return JsonResponse({
+        #         "thanh_cong": False,
+        #         "thong_bao": "Không có quyền truy cập tài nguyên này.",
+        #         "ma_loi": {
+        #             "permission": "Người dùng không có quyền tạo tài sản"
+        #         }
+        #     }, status=403)
+
+        # Parse JSON data từ request body
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'thanh_cong': False,
+                'thong_bao': 'Dữ liệu JSON không hợp lệ',
+                'ma_loi': {
+                    'json': 'Định dạng JSON không đúng cú pháp'
+                }
+            }, status=400)
+
+        # Kiểm tra các field bắt buộc
+        required_fields = ['ma_tai_san', 'ten_tai_san', 'so_serial', 'gia_mua']
+        missing_fields = {}
+
+        for field in required_fields:
+            if field not in data or not data[field]:
+                missing_fields[field] = f'Trường {field} là bắt buộc và không được để trống'
+
+        if missing_fields:
+            return JsonResponse({
+                'thanh_cong': False,
+                'thong_bao': 'Thiếu thông tin bắt buộc',
+                'ma_loi': missing_fields
+            }, status=400)
+
+        # Kiểm tra mã tài sản đã tồn tại chưa
+        if TaiSan.objects.filter(ma_tai_san=data['ma_tai_san']).exists():
+            return JsonResponse({
+                'thanh_cong': False,
+                'thong_bao': 'Mã tài sản đã tồn tại',
+                'ma_loi': {
+                    'ma_tai_san': f'Mã tài sản "{data["ma_tai_san"]}" đã được sử dụng'
+                }
+            }, status=400)
+
+        # Xử lý foreign key relationships với xử lý 404
+        danh_muc = None
+        if 'danh_muc' in data and data['danh_muc']:
+            try:
+                danh_muc = DanhMuc.objects.get(danh_muc=data['danh_muc'])
+            except DanhMuc.DoesNotExist:
+                return JsonResponse({
+                    "thanh_cong": False,
+                    "thong_bao": "Không tìm thấy tài nguyên.",
+                    "ma_loi": {
+                        "danh_muc": f'Danh mục "{data["danh_muc"]}" không tồn tại trong hệ thống'
+                    }
+                }, status=400)
+
+        ma_nhan_vien = None
+        if 'ma_nhan_vien' in data and data['ma_nhan_vien']:
+            try:
+                ma_nhan_vien = NhanVien.objects.get(ma_nhan_vien=data['ma_nhan_vien'])
+            except NhanVien.DoesNotExist:
+                return JsonResponse({
+                    "thanh_cong": False,
+                    "thong_bao": "Không tìm thấy tài nguyên.",
+                    "ma_loi": {
+                        "ma_nhan_vien": f'Nhân viên "{data["ma_nhan_vien"]}" không tồn tại trong hệ thống'
+                    }
+                }, status=400)
+
+        nha_san_xuat = None
+        if 'nha_san_xuat' in data and data['nha_san_xuat']:
+            try:
+                nha_san_xuat = NhaSanXuat.objects.get(nha_san_xuat=data['nha_san_xuat'])
+            except NhaSanXuat.DoesNotExist:
+                return JsonResponse({
+                    "thanh_cong": False,
+                    "thong_bao": "Không tìm thấy tài nguyên.",
+                    "ma_loi": {
+                        "nha_san_xuat": f'Nhà sản xuất "{data["nha_san_xuat"]}" không tồn tại trong hệ thống'
+                    }
+                }, status=400)
+
+        nha_cung_cap = None
+        if 'nha_cung_cap' in data and data['nha_cung_cap']:
+            try:
+                nha_cung_cap = NhaCungCap.objects.get(nha_cung_cap=data['nha_cung_cap'])
+            except NhaCungCap.DoesNotExist:
+                return JsonResponse({
+                    "thanh_cong": False,
+                    "thong_bao": "Không tìm thấy tài nguyên.",
+                    "ma_loi": {
+                        "nha_cung_cap": f'Nhà cung cấp "{data["nha_cung_cap"]}" không tồn tại trong hệ thống'
+                    }
+                }, status=400)
+
+        # Tạo tài sản mới
+        try:
+            taisan = TaiSan.objects.create(
+                ma_tai_san=data['ma_tai_san'],
+                ten_tai_san=data['ten_tai_san'],
+                so_serial=data['so_serial'],
+                gia_mua=data['gia_mua'],
+                danh_muc=danh_muc,
+                ma_nhan_vien=ma_nhan_vien,
+                nha_san_xuat=nha_san_xuat,
+                nha_cung_cap=nha_cung_cap
+            )
+        except Exception as create_error:
+            logger.error(f"Lỗi khi tạo tài sản: {str(create_error)}")
+            return JsonResponse({
+                "thanh_cong": False,
+                "thong_bao": "Lỗi máy chủ nội bộ.",
+                "ma_loi": {
+                    "database": f'Không thể tạo tài sản: {str(create_error)}'
+                }
+            }, status=500)
+
+        # Trả về thông tin tài sản vừa tạo
+        try:
+            response_data = {
+                'ma_tai_san': taisan.ma_tai_san,
+                'ten_tai_san': taisan.ten_tai_san,
+                'so_serial': taisan.so_serial,
+                'gia_mua': float(taisan.gia_mua),
+                'danh_muc': {
+                    'ten_danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
+                } if taisan.danh_muc else None,
+                'ma_nhan_vien': {
+                    'ma_nhan_vien': taisan.ma_nhan_vien.ma_nhan_vien if taisan.ma_nhan_vien else None,
+                } if taisan.ma_nhan_vien else None,
+                'nha_san_xuat': {
+                    'ten_nha_san_xuat': taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else None,
+                } if taisan.nha_san_xuat else None,
+                'nha_cung_cap': {
+                    'ten_nha_cung_cap': taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else None,
+                } if taisan.nha_cung_cap else None
+            }
+        except AttributeError as attr_error:
+            logger.warning(f"Lỗi thuộc tính với tài sản {taisan.ma_tai_san}: {str(attr_error)}")
+            # Trả về dữ liệu cơ bản nếu có lỗi thuộc tính
+            response_data = {
+                'ma_tai_san': taisan.ma_tai_san,
+                'ten_tai_san': taisan.ten_tai_san,
+                'so_serial': taisan.so_serial,
+                'gia_mua': float(taisan.gia_mua),
+            }
+
+        return JsonResponse({
+            'thanh_cong': True,
+            'thong_bao': 'Tạo tài sản thành công',
+            'du_lieu': response_data
+        }, status=201)
+
+    except PermissionDenied:
+        # Xử lý lỗi 403 - Forbidden
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Không có quyền truy cập tài nguyên này.",
+            "ma_loi": {
+                "permission": "Người dùng không có quyền thực hiện thao tác này"
+            }
+        }, status=403)
+
+    except Http404:
+        # Xử lý lỗi 404 - Not Found
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Không tìm thấy tài nguyên.",
+            "ma_loi": {
+                "resource": "Tài nguyên yêu cầu không tồn tại"
+                 }
+        }, status=404)
+
+    except Exception as e:
+        # Xử lý lỗi 500 - Internal Server Error
+        logger.error(f"Lỗi server khi tạo tài sản: {str(e)}")
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Lỗi máy chủ nội bộ.",
+            "ma_loi": {
+                "server": f"Lỗi hệ thống: {str(e)}"
+            }
         }, status=500)
