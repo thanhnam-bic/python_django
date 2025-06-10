@@ -7,14 +7,19 @@ from django.views.decorators.http import require_http_methods
 import logging
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .permissions import Kiem_Tra_Phan_Quyen_User
 
 # View index - Trang chủ của ứng dụng
 def index(request):
     return HttpResponse("Xin chào. Bạn đã đến app QLTS")
 
-# API DELETE - Xóa tài sản theo ID
-@csrf_exempt
-@require_http_methods(["DELETE"])
+#1 API DELETE - Xóa tài sản theo ID
+@api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([Kiem_Tra_Phan_Quyen_User])
 def xoa_tai_san(request, id):
         try:
             asset = TaiSan.objects.get(pk=id)
@@ -39,9 +44,11 @@ def xoa_tai_san(request, id):
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
             }, status=500)
-  # API PUT - Cập nhật tài sản theo ID
-@csrf_exempt
-@require_http_methods(["PUT"])
+
+#2 API PUT - Cập nhật tài sản theo ID
+@api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([Kiem_Tra_Phan_Quyen_User])
 def cap_nhat_tai_san(request, id):
     try:
         try:
@@ -139,9 +146,11 @@ def cap_nhat_tai_san(request, id):
             "thanh_cong": False,
             "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
         }, status=500)
-# API GET - Lấy chi tiết tài sản theo ID
-@csrf_exempt
-@require_http_methods(["GET"])
+
+#3 API GET - Lấy chi tiết tài sản theo ID
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([Kiem_Tra_Phan_Quyen_User])
 def chi_tiet_tai_san(request, id):
     try:
         asset = TaiSan.objects.get(pk=id)
@@ -184,11 +193,13 @@ def chi_tiet_tai_san(request, id):
             "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
         }, status=500) 
 
-# API GET - Lấy danh sách tất cả tài sản
+#4 API GET - Lấy danh sách tất cả tài sản
 # Thiết lập logging
 logger = logging.getLogger(__name__)
 
-@require_http_methods(["GET"])
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([Kiem_Tra_Phan_Quyen_User])
 def get_tat_ca_taisan(request):
     try:
         # Kiểm tra quyền truy cập (403)
@@ -241,7 +252,7 @@ def get_tat_ca_taisan(request):
                         'ma_nhan_vien': taisan.ma_nhan_vien.ma_nhan_vien if taisan.ma_nhan_vien else None,
                     } if taisan.ma_nhan_vien else None,
                     'nha_san_xuat': {
-                         'ten_nha_san_xuat': taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else None,
+                        'ten_nha_san_xuat': taisan.nha_san_xuat.nha_san_xuat if taisan.nha_san_xuat else None,
                     } if taisan.nha_san_xuat else None,
                     'nha_cung_cap': {
                         'ten_nha_cung_cap': taisan.nha_cung_cap.nha_cung_cap if taisan.nha_cung_cap else None,
@@ -294,8 +305,10 @@ def get_tat_ca_taisan(request):
             }
         }, status=500)
 
-    
-@require_http_methods(["GET"])
+#5 API GET - Thống kê tài sản theo nhân viên
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([Kiem_Tra_Phan_Quyen_User])
 def tinh_taisan_moi_nhanvien(request):
     try:
         # Lấy tất cả nhân viên
