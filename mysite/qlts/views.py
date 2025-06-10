@@ -7,8 +7,6 @@ from django.views.decorators.http import require_http_methods
 import logging
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
-
-
 # View index - Trang chủ của ứng dụng
 def index(request):
     return HttpResponse("Xin chào. Bạn đã đến app QLTS")
@@ -40,6 +38,7 @@ def xoa_tai_san(request, id):
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
             }, status=500)
+
   #2. API PUT - Cập nhật tài sản theo ID
 @csrf_exempt
 @require_http_methods(["PUT"])
