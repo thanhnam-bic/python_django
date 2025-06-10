@@ -12,7 +12,7 @@ from django.http import Http404
 def index(request):
     return HttpResponse("Xin chào. Bạn đã đến app QLTS")
 
-# API DELETE - Xóa tài sản theo ID
+#1. API DELETE - Xóa tài sản theo ID(api/xoa_tai_san/<str:id>/)
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def xoa_tai_san(request, id):
@@ -39,7 +39,7 @@ def xoa_tai_san(request, id):
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
             }, status=500)
-  # API PUT - Cập nhật tài sản theo ID
+#2. API PUT - Cập nhật tài sản theo ID(api/cap_nhat_tai_san/<str:id>/)
 @csrf_exempt
 @require_http_methods(["PUT"])
 def cap_nhat_tai_san(request, id):
@@ -139,7 +139,7 @@ def cap_nhat_tai_san(request, id):
             "thanh_cong": False,
             "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
         }, status=500)
-# API GET - Lấy chi tiết tài sản theo ID
+#3. API GET - Lấy chi tiết tài sản theo ID(api/chi_tiet_tai_san/<str:id>/)
 @csrf_exempt
 @require_http_methods(["GET"])
 def chi_tiet_tai_san(request, id):
@@ -184,21 +184,21 @@ def chi_tiet_tai_san(request, id):
             "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
         }, status=500) 
 
-# API GET - Lấy danh sách tất cả tài sản
+#4. API GET - Lấy danh sách tất cả tài sản(api/lay_tat_ca_tai_san/)
 # Thiết lập logging
 logger = logging.getLogger(__name__)
 
 @require_http_methods(["GET"])
-def get_tat_ca_taisan(request):
+def lay_tat_ca_tai_san(request):
     try:
         # Kiểm tra quyền truy cập (403)
         # Ví dụ: Chỉ cho phép user đã đăng nhập hoặc có quyền cụ thể
         '''if not request.user.is_authenticated:
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Không có quyền truy cập tài nguyên này.",
+                "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
                 "ma_loi": {
-                    "authentication": "Người dùng chưa được xác thực"
+                    "authentication": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
                 }
             }, status=403)
         '''
@@ -268,13 +268,10 @@ def get_tat_ca_taisan(request):
         logger.error(f"Lỗi server khi lấy danh sách tài sản: {str(e)}")
         return JsonResponse({
             "thanh_cong": False,
-            "thong_bao": "Lỗi máy chủ nội bộ.",
-            "ma_loi": {
-                "server": f"Lỗi hệ thống: {str(e)}"
-            }
+            "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau",
         }, status=500)
 
-#tinh_tai_san_moi_nhan_vien
+#5. API GET - tinh_tai_san_moi_nhan_vien (api/tinh_tai_san_moi_nhan_vien/)
 @require_http_methods(["GET"])
 def tinh_tai_san_moi_nhan_vien(request):
     try:
@@ -324,10 +321,7 @@ def tinh_tai_san_moi_nhan_vien(request):
             logger.error(f"Lỗi khi đếm số lượng: {str(count_error)}")
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Lỗi máy chủ nội bộ.",
-                "ma_loi": {
-                    "database": f'Không thể đếm số lượng bản ghi: {str(count_error)}'
-                }
+                "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau",
             }, status=500)
         
         thong_ke_display.append(f"Tổng số nhân viên: {tong_nhan_vien}")
@@ -408,10 +402,7 @@ def tinh_tai_san_moi_nhan_vien(request):
             logger.error(f"Lỗi khi xử lý dữ liệu nhân viên: {str(loop_error)}")
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Lỗi máy chủ nội bộ.",
-                "ma_loi": {
-                    "processing": f'Lỗi khi xử lý dữ liệu: {str(loop_error)}'
-                }
+                "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau.",
             }, status=500)
         
         # Thêm thông tin tài sản chưa phân công
@@ -461,10 +452,7 @@ def tinh_tai_san_moi_nhan_vien(request):
             logger.error(f"Lỗi khi xử lý tài sản chưa phân công: {str(unassigned_error)}")
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Lỗi máy chủ nội bộ.",
-                "ma_loi": {
-                    "unassigned_assets": f'Lỗi khi xử lý tài sản chưa phân công: {str(unassigned_error)}'
-                }
+                "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau.",
             }, status=500)
         
         return JsonResponse({
@@ -483,9 +471,9 @@ def tinh_tai_san_moi_nhan_vien(request):
         # Xử lý lỗi 403 - Forbidden
         return JsonResponse({
             "thanh_cong": False,
-            "thong_bao": "Không có quyền truy cập tài nguyên này.",
+            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
             "ma_loi": {
-                "permission": "Người dùng không có quyền thực hiện thao tác này"
+                "permission": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
             }
         }, status=403)
     
@@ -504,11 +492,9 @@ def tinh_tai_san_moi_nhan_vien(request):
         logger.error(f"Lỗi server khi lấy thống kê tài sản: {str(e)}")
         return JsonResponse({
             "thanh_cong": False,
-            "thong_bao": "Lỗi máy chủ nội bộ.",
-            "ma_loi": {
-                "server": f"Lỗi hệ thống: {str(e)}"
-            }
+            "thong_bao":"Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
         }, status=500)
+#6. API POST - tạo tài sản (api/tao_tai_san/)
 # Thiết lập logging
 logger = logging.getLogger(__name__)
 
@@ -520,9 +506,9 @@ def tao_tai_san(request):
         if not request.user.is_authenticated:
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Không có quyền truy cập tài nguyên này.",
+                "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
                 "ma_loi": {
-                    "authentication": "Người dùng chưa được xác thực"
+                  "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
                 }
             }, status=403)
         '''
@@ -585,7 +571,7 @@ def tao_tai_san(request):
                     "ma_loi": {
                         "danh_muc": f'Danh mục "{data["danh_muc"]}" không tồn tại trong hệ thống'
                     }
-                }, status=404)
+                }, status=400)
 
         ma_nhan_vien = None
         if 'ma_nhan_vien' in data and data['ma_nhan_vien']:
@@ -598,7 +584,7 @@ def tao_tai_san(request):
                     "ma_loi": {
                         "ma_nhan_vien": f'Nhân viên "{data["ma_nhan_vien"]}" không tồn tại trong hệ thống'
                     }
-                }, status=404)
+                }, status=400)
 
         nha_san_xuat = None
         if 'nha_san_xuat' in data and data['nha_san_xuat']:
@@ -611,7 +597,7 @@ def tao_tai_san(request):
                     "ma_loi": {
                         "nha_san_xuat": f'Nhà sản xuất "{data["nha_san_xuat"]}" không tồn tại trong hệ thống'
                     }
-                }, status=404)
+                }, status=400)
 
         nha_cung_cap = None
         if 'nha_cung_cap' in data and data['nha_cung_cap']:
@@ -624,7 +610,7 @@ def tao_tai_san(request):
                     "ma_loi": {
                         "nha_cung_cap": f'Nhà cung cấp "{data["nha_cung_cap"]}" không tồn tại trong hệ thống'
                     }
-                }, status=404)
+                }, status=400)
 
         # Tạo tài sản mới
         try:
@@ -642,10 +628,7 @@ def tao_tai_san(request):
             logger.error(f"Lỗi khi tạo tài sản: {str(create_error)}")
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Lỗi máy chủ nội bộ.",
-                "ma_loi": {
-                    "database": f'Không thể tạo tài sản: {str(create_error)}'
-                }
+                "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau",
             }, status=500)
 
         # Trả về thông tin tài sản vừa tạo
@@ -709,8 +692,5 @@ def tao_tai_san(request):
         logger.error(f"Lỗi server khi tạo tài sản: {str(e)}")
         return JsonResponse({
             "thanh_cong": False,
-            "thong_bao": "Lỗi máy chủ nội bộ.",
-            "ma_loi": {
-                "server": f"Lỗi hệ thống: {str(e)}"
-            }
+            "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau",
         }, status=500)
