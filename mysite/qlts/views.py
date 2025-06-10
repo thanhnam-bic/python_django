@@ -72,16 +72,16 @@ def get_tat_ca_taisan(request):
         # Lấy tất cả tài sản từ database
         taisan_list = TaiSan.objects.all()
         
-        # Kiểm tra nếu không có dữ liệu (404)
-        if not taisan_list.exists():
+        # Kiểm tra nếu không có dữ liệu (200)
+        """if not taisan_list.exists():
             return JsonResponse({
-                "thanh_cong": False,
+                "thanh_cong": True,
                 "thong_bao": "Không tìm thấy tài nguyên.",
                 "ma_loi": {
                     "data": "Không có tài sản nào trong hệ thống"
                 }
-            }, status=404)
-        
+            }, status=200)
+        """
         # Chuyển đổi dữ liệu thành dictionary để trả về chi tiết
         data = []
         for taisan in taisan_list:
