@@ -36,7 +36,7 @@ def xoa_tai_san(request, id):
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
             }, status=500)
-# API PUT - Cập nhật tài sản theo ID
+  # API PUT - Cập nhật tài sản theo ID
 @csrf_exempt
 @require_http_methods(["PUT"])
 def cap_nhat_tai_san(request, id):
@@ -136,6 +136,50 @@ def cap_nhat_tai_san(request, id):
             "thanh_cong": False,
             "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
         }, status=500)
+# API GET - Lấy chi tiết tài sản theo ID
+@csrf_exempt
+@require_http_methods(["GET"])
+def chi_tiet_tai_san(request, id):
+    try:
+        asset = TaiSan.objects.get(pk=id)
+        du_lieu = {
+            "ma_tai_san": asset.ma_tai_san,
+            "ten_tai_san": asset.ten_tai_san,
+            "so_serial": asset.so_serial,
+            "gia_mua": float(asset.gia_mua),
+            "danh_muc": {
+                "ten_danh_muc": asset.danh_muc.danh_muc if asset.danh_muc else None
+            },
+            "nhan_vien": {
+                "ma_nhan_vien": asset.ma_nhan_vien.ma_nhan_vien if asset.ma_nhan_vien else None
+            },
+            "nha_san_xuat": {
+                "ten_nha_san_xuat": asset.nha_san_xuat.nha_san_xuat if asset.nha_san_xuat else None
+            },
+            "nha_cung_cap": {
+                "ten_nha_cung_cap": asset.nha_cung_cap.nha_cung_cap if asset.nha_cung_cap else None
+            }
+        }
+        return JsonResponse({
+            "thanh_cong": True,
+            "thong_bao": "Lấy chi tiết tài sản thành công",
+            "du_lieu": du_lieu
+        })
+
+    except TaiSan.DoesNotExist:
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Không tìm thấy tài nguyên.",
+            "loi": {
+                "id": "Không tồn tại ID này"
+            }
+        }, status=404)
+    
+    except Exception:
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau"
+        }, status=500) 
 
 # API GET - Lấy danh sách tất cả tài sản
 @csrf_exempt
