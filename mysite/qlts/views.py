@@ -6,7 +6,7 @@ import json
 from django.views.decorators.http import require_http_methods
 import logging
 from django.core.exceptions import PermissionDenied
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -14,7 +14,7 @@ from .permissions import Kiem_Tra_Phan_Quyen_User
 
 # View index - Trang chủ của ứng dụng
 def index(request):
-    return HttpResponse("Xin chào. Bạn đã đến app quản lý Tài sản. Đây là trang chủ của ứng dụng.")
+    return HttpResponse("Xin chào. Bạn đã đến app quản lý Tài sản. Đây là trang chủ của ứng dụng")
 
 #1 API DELETE - Xóa tài sản theo ID
 @api_view(['DELETE'])
@@ -26,31 +26,16 @@ def xoa_tai_san(request, id):
             asset.delete()
             return JsonResponse({
                 "thanh_cong": True,
-                "thong_bao": "Xóa tài sản thành công.",
+                "thong_bao": "Xóa tài sản thành công",
                 "du_lieu": {
                     "ma_tai_san": id
                 }
             })
-        except PermissionDenied:
-            return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
-            }
-        }, status=401)
-        except PermissionDenied:
-            return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
-            }
-        }, status=403)
+
         except TaiSan.DoesNotExist:
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Không tìm thấy tài nguyên.",
+                "thong_bao": "Không tìm thấy tài nguyên",
                 "loi": {
                     "id": "Không tồn tại ID này"
                 }
@@ -72,7 +57,7 @@ def cap_nhat_tai_san(request, id):
         except TaiSan.DoesNotExist:
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Không tìm thấy tài sản.",
+                "thong_bao": "Không tìm thấy tài sản",
                 "loi": {"ma_tai_san": f"Tài sản với mã {id} không tồn tại"}
             }, status=404)
 
@@ -81,7 +66,7 @@ def cap_nhat_tai_san(request, id):
         except json.JSONDecodeError:
             return JsonResponse({
                 "thanh_cong": False,
-                "thong_bao": "Dữ liệu gửi lên không hợp lệ.",
+                "thong_bao": "Dữ liệu gửi lên không hợp lệ",
                 "loi": {"json": "JSON không đúng định dạng"}
             }, status=400)
 
@@ -120,7 +105,7 @@ def cap_nhat_tai_san(request, id):
             except NhaSanXuat.DoesNotExist:
                 return JsonResponse({
                     "thanh_cong": False,
-                    "thong_bao": "Không tìm thấy nhà sản xuất.",
+                    "thong_bao": "Không tìm thấy nhà sản xuất",
                     "loi": {"nha_san_xuat": f"Nhà sản xuất với mã {data['nha_san_xuat']} không tồn tại"}
                 }, status=400)
 
@@ -130,7 +115,7 @@ def cap_nhat_tai_san(request, id):
             except NhaCungCap.DoesNotExist:
                 return JsonResponse({
                     "thanh_cong": False,
-                    "thong_bao": "Không tìm thấy nhà cung cấp.",
+                    "thong_bao": "Không tìm thấy nhà cung cấp",
                     "loi": {"nha_cung_cap": f"Nhà cung cấp với mã {data['nha_cung_cap']} không tồn tại"}
                 }, status=400)
 
@@ -157,22 +142,7 @@ def cap_nhat_tai_san(request, id):
                 }
             }
         })
-    except PermissionDenied:
-        return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
-            }
-        }, status=401)
-    except PermissionDenied:
-            return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
-            }
-        }, status=403)
+
     except Exception as e:
         return JsonResponse({
             "thanh_cong": False,
@@ -210,30 +180,16 @@ def chi_tiet_tai_san(request, id):
             "du_lieu": du_lieu
         })
 
-    except PermissionDenied:
-            return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
-            }
-        }, status=401)
+
     except TaiSan.DoesNotExist:
         return JsonResponse({
             "thanh_cong": False,
-            "thong_bao": "Không tìm thấy tài nguyên.",
+            "thong_bao": "Không tìm thấy tài nguyên",
             "ma_loi": {
                 "id": "Không tồn tại ID này"
             }
         }, status=404)
-    except PermissionDenied:
-            return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
-            }
-        }, status=403)
+
     except Exception:
         return JsonResponse({
             "thanh_cong": False,
@@ -290,14 +246,7 @@ def lay_tat_ca_tai_san(request):
             }
         }, status=200)
         
-    except PermissionDenied:
-            return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
-            }
-        }, status=401)
+
     except Exception as e:
         # Xử lý lỗi 500 - Internal Server Error
         logger.error(f"Lỗi server khi lấy danh sách tài sản: {str(e)}")
@@ -493,30 +442,12 @@ def tinh_tai_san_moi_nhan_vien(request):
             }
         }, status=200)
 
-    except PermissionDenied:
-            return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
-            }
-        }, status=401)
-    
-    except PermissionDenied:
-        # Xử lý lỗi 403 - Forbidden
-        return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
-            }
-        }, status=403)
     
     except Http404:
         # Xử lý lỗi 404 - Not Found
         return JsonResponse({
             "thanh_cong": False,
-            "thong_bao": "Không tìm thấy tài nguyên.",
+            "thong_bao": "Không tìm thấy tài nguyên",
             "ma_loi": {
                 "id": "Tài nguyên yêu cầu không tồn tại"
             }
@@ -584,7 +515,7 @@ def tao_tai_san(request):
             except DanhMuc.DoesNotExist:
                 return JsonResponse({
                     "thanh_cong": False,
-                    "thong_bao": "Không tìm thấy tài nguyên.",
+                    "thong_bao": "Không tìm thấy tài nguyên",
                     "ma_loi": {
                         "danh_muc": f'Danh mục "{data["danh_muc"]}" không tồn tại trong hệ thống'
                     }
@@ -597,7 +528,7 @@ def tao_tai_san(request):
             except NhanVien.DoesNotExist:
                 return JsonResponse({
                     "thanh_cong": False,
-                    "thong_bao": "Không tìm thấy tài nguyên.",
+                    "thong_bao": "Không tìm thấy tài nguyên",
                     "ma_loi": {
                         "ma_nhan_vien": f'Nhân viên "{data["ma_nhan_vien"]}" không tồn tại trong hệ thống'
                     }
@@ -610,7 +541,7 @@ def tao_tai_san(request):
             except NhaSanXuat.DoesNotExist:
                 return JsonResponse({
                     "thanh_cong": False,
-                    "thong_bao": "Không tìm thấy tài nguyên.",
+                    "thong_bao": "Không tìm thấy tài nguyên",
                     "ma_loi": {
                         "nha_san_xuat": f'Nhà sản xuất "{data["nha_san_xuat"]}" không tồn tại trong hệ thống'
                     }
@@ -623,7 +554,7 @@ def tao_tai_san(request):
             except NhaCungCap.DoesNotExist:
                 return JsonResponse({
                     "thanh_cong": False,
-                    "thong_bao": "Không tìm thấy tài nguyên.",
+                    "thong_bao": "Không tìm thấy tài nguyên",
                     "ma_loi": {
                         "nha_cung_cap": f'Nhà cung cấp "{data["nha_cung_cap"]}" không tồn tại trong hệ thống'
                     }
@@ -684,34 +615,6 @@ def tao_tai_san(request):
             'du_lieu': response_data
         }, status=201)
 
-    except PermissionDenied:
-            return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
-            "ma_loi": {
-                "xac_thuc": "Người dùng chưa được xác thực.",
-            }
-        }, status=401)
-    
-    except PermissionDenied:
-        # Xử lý lỗi 403 - Forbidden
-        return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
-            "ma_loi": {
-                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
-            }
-        }, status=403)
-    
-    except Http404:
-        # Xử lý lỗi 404 - Not Found
-        return JsonResponse({
-            "thanh_cong": False,
-            "thong_bao": "Không tìm thấy tài nguyên.",
-            "ma_loi": {
-                "id": "Tài nguyên yêu cầu không tồn tại"
-            }
-        }, status=404)
     
     except Exception as e:
         # Xử lý lỗi 500 - Internal Server Error
