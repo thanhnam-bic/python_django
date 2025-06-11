@@ -14,7 +14,7 @@ from .permissions import Kiem_Tra_Phan_Quyen_User
 
 # View index - Trang chủ của ứng dụng
 def index(request):
-    return HttpResponse("Xin chào. Bạn đã đến app Quan lý Tài sản. Đây là trang chủ của ứng dụng.")
+    return HttpResponse("Xin chào. Bạn đã đến app quản lý Tài sản. Đây là trang chủ của ứng dụng.")
 
 #1 API DELETE - Xóa tài sản theo ID
 @api_view(['DELETE'])
@@ -34,9 +34,17 @@ def xoa_tai_san(request, id):
         except PermissionDenied:
             return JsonResponse({
             "thanh_cong": False,
+            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
+            "ma_loi": {
+                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
+            }
+        }, status=401)
+        except PermissionDenied:
+            return JsonResponse({
+            "thanh_cong": False,
             "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
             "ma_loi": {
-                "permission": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
+                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
             }
         }, status=403)
         except TaiSan.DoesNotExist:
@@ -150,11 +158,19 @@ def cap_nhat_tai_san(request, id):
             }
         })
     except PermissionDenied:
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
+            "ma_loi": {
+                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
+            }
+        }, status=401)
+    except PermissionDenied:
             return JsonResponse({
             "thanh_cong": False,
             "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
             "ma_loi": {
-                "permission": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
+                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
             }
         }, status=403)
     except Exception as e:
@@ -194,6 +210,14 @@ def chi_tiet_tai_san(request, id):
             "du_lieu": du_lieu
         })
 
+    except PermissionDenied:
+            return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
+            "ma_loi": {
+                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
+            }
+        }, status=401)
     except TaiSan.DoesNotExist:
         return JsonResponse({
             "thanh_cong": False,
@@ -207,7 +231,7 @@ def chi_tiet_tai_san(request, id):
             "thanh_cong": False,
             "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
             "ma_loi": {
-                "permission": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
+                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
             }
         }, status=403)
     except Exception:
@@ -225,30 +249,9 @@ logger = logging.getLogger(__name__)
 @permission_classes([Kiem_Tra_Phan_Quyen_User])
 def lay_tat_ca_tai_san(request):
     try:
-        # Kiểm tra quyền truy cập (403)
-        # Ví dụ: Chỉ cho phép user đã đăng nhập hoặc có quyền cụ thể
-        '''if not request.user.is_authenticated:
-            return JsonResponse({
-                "thanh_cong": False,
-                "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
-                "ma_loi": {
-                    "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
-                }
-            }, status=403)
-        '''
         # Lấy tất cả tài sản từ database
         taisan_list = TaiSan.objects.all()
-        
-        # Kiểm tra nếu không có dữ liệu (200)
-        """if not taisan_list.exists():
-            return JsonResponse({
-                "thanh_cong": True,
-                "thong_bao": "Không tìm thấy tài nguyên.",
-                "ma_loi": {
-                    "data": "Không có tài sản nào trong hệ thống"
-                }
-            }, status=200)
-        """
+
         # Chuyển đổi dữ liệu thành dictionary để trả về chi tiết
         data = []
         for taisan in taisan_list:
@@ -287,6 +290,14 @@ def lay_tat_ca_tai_san(request):
             }
         }, status=200)
         
+    except PermissionDenied:
+            return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
+            "ma_loi": {
+                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
+            }
+        }, status=401)
     except Exception as e:
         # Xử lý lỗi 500 - Internal Server Error
         logger.error(f"Lỗi server khi lấy danh sách tài sản: {str(e)}")
@@ -301,16 +312,6 @@ def lay_tat_ca_tai_san(request):
 @permission_classes([Kiem_Tra_Phan_Quyen_User])
 def tinh_tai_san_moi_nhan_vien(request):
     try:
-        # Kiểm tra quyền truy cập (403)
-        '''if not request.user.is_authenticated:
-            return JsonResponse({
-                "thanh_cong": False,
-                "thong_bao": "Không có quyền truy cập tài nguyên này.",
-                "ma_loi": {
-                    "authentication": "Người dùng chưa được xác thực"
-                }
-            }, status=403)
-        '''
         # Lấy tất cả nhân viên
         try:
             nhanvien_list = NhanVien.objects.all()
@@ -493,12 +494,21 @@ def tinh_tai_san_moi_nhan_vien(request):
         }, status=200)
 
     except PermissionDenied:
+            return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
+            "ma_loi": {
+                "quyen_xac_thuc": "Người dùng chưa được xác thực.",
+            }
+        }, status=401)
+    
+    except PermissionDenied:
         # Xử lý lỗi 403 - Forbidden
         return JsonResponse({
             "thanh_cong": False,
             "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
             "ma_loi": {
-                "permission": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
+                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
             }
         }, status=403)
     
@@ -529,16 +539,6 @@ logger = logging.getLogger(__name__)
 @permission_classes([Kiem_Tra_Phan_Quyen_User])
 def tao_tai_san(request):
     try:
-        '''# Kiểm tra quyền truy cập (403)
-        if not request.user.is_authenticated:
-            return JsonResponse({
-                "thanh_cong": False,
-                "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
-                "ma_loi": {
-                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
-                }
-            }, status=403)
-        '''
         # Parse JSON data từ request body
         try:
             data = json.loads(request.body)
@@ -684,6 +684,15 @@ def tao_tai_san(request):
             'du_lieu': response_data
         }, status=201)
 
+    except PermissionDenied:
+            return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Bạn cần đăng nhập để truy cập tài nguyên này.",
+            "ma_loi": {
+                "xac_thuc": "Người dùng chưa được xác thực.",
+            }
+        }, status=401)
+    
     except PermissionDenied:
         # Xử lý lỗi 403 - Forbidden
         return JsonResponse({
