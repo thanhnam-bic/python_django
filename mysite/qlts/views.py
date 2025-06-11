@@ -200,7 +200,7 @@ logger = logging.getLogger(__name__)
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([Kiem_Tra_Phan_Quyen_User])
-def get_tat_ca_taisan(request):
+def lay_tat_ca_tai_san(request):
     try:
         # Kiểm tra quyền truy cập (403)
         # Ví dụ: Chỉ cho phép user đã đăng nhập hoặc có quyền cụ thể
@@ -276,7 +276,7 @@ def get_tat_ca_taisan(request):
 @api_view(['GET'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([Kiem_Tra_Phan_Quyen_User])
-def tinh_tai_san_moi_nhanvien(request):
+def tinh_tai_san_moi_nhan_vien(request):
     try:
         # Kiểm tra quyền truy cập (403)
         '''if not request.user.is_authenticated:
