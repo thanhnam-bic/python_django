@@ -173,7 +173,7 @@ def chi_tiet_tai_san(request, id):
         return JsonResponse({
             "thanh_cong": False,
             "thong_bao": "Không tìm thấy tài nguyên.",
-            "loi": {
+            "ma_loi": {
                 "id": "Không tồn tại ID này"
             }
         }, status=404)
@@ -198,7 +198,7 @@ def lay_tat_ca_tai_san(request):
                 "thanh_cong": False,
                 "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
                 "ma_loi": {
-                    "authentication": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
+                    "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
                 }
             }, status=403)
         '''
@@ -322,6 +322,9 @@ def tinh_tai_san_moi_nhan_vien(request):
             return JsonResponse({
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau",
+                "ma_loi": {
+                    "database": f'lỗi khi đếm số lượng: {str(count_error)}'
+                }
             }, status=500)
         
         thong_ke_display.append(f"Tổng số nhân viên: {tong_nhan_vien}")
@@ -403,6 +406,9 @@ def tinh_tai_san_moi_nhan_vien(request):
             return JsonResponse({
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau.",
+                "ma_loi": {
+                    "database": f'lỗi khi xử lý dữ liệu nhân viên: {str(loop_error)}'
+                }
             }, status=500)
         
         # Thêm thông tin tài sản chưa phân công
@@ -453,6 +459,9 @@ def tinh_tai_san_moi_nhan_vien(request):
             return JsonResponse({
                 "thanh_cong": False,
                 "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau.",
+                "ma_loi": {
+                    "database": f'Lỗi khi xử lý tài sản chưa phân công: {str(unassigned_error)}'
+                }
             }, status=500)
         
         return JsonResponse({
@@ -483,7 +492,7 @@ def tinh_tai_san_moi_nhan_vien(request):
             "thanh_cong": False,
             "thong_bao": "Không tìm thấy tài nguyên.",
             "ma_loi": {
-                "resource": "Tài nguyên yêu cầu không tồn tại"
+                "id": "Tài nguyên yêu cầu không tồn tại"
             }
         }, status=404)
     
@@ -492,7 +501,7 @@ def tinh_tai_san_moi_nhan_vien(request):
         logger.error(f"Lỗi server khi lấy thống kê tài sản: {str(e)}")
         return JsonResponse({
             "thanh_cong": False,
-            "thong_bao":"Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
+            "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau",
         }, status=500)
 #6. API POST - tạo tài sản (api/tao_tai_san/)
 # Thiết lập logging
@@ -516,9 +525,9 @@ def tao_tai_san(request):
         # if not request.user.has_perm('mysite.add_taisan'):
         #     return JsonResponse({
         #         "thanh_cong": False,
-        #         "thong_bao": "Không có quyền truy cập tài nguyên này.",
+        #         "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
         #         "ma_loi": {
-        #             "permission": "Người dùng không có quyền tạo tài sản"
+        #             "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
         #         }
         #     }, status=403)
 
@@ -671,9 +680,9 @@ def tao_tai_san(request):
         # Xử lý lỗi 403 - Forbidden
         return JsonResponse({
             "thanh_cong": False,
-            "thong_bao": "Không có quyền truy cập tài nguyên này.",
+            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
             "ma_loi": {
-                "permission": "Người dùng không có quyền thực hiện thao tác này"
+                "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
             }
         }, status=403)
     
@@ -683,7 +692,7 @@ def tao_tai_san(request):
             "thanh_cong": False,
             "thong_bao": "Không tìm thấy tài nguyên.",
             "ma_loi": {
-                "resource": "Tài nguyên yêu cầu không tồn tại"
+                "id": "Tài nguyên yêu cầu không tồn tại"
             }
         }, status=404)
     
