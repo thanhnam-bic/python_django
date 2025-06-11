@@ -202,16 +202,6 @@ def lay_tat_ca_tai_san(request):
                 }
             }, status=403)
         '''
-        # Có thể thêm kiểm tra quyền cụ thể
-        # if not request.user.has_perm('mysite.view_taisan'):
-        #     return JsonResponse({
-        #         "thanh_cong": False,
-        #         "thong_bao": "Không có quyền truy cập tài nguyên này.",
-        #         "ma_loi": {
-        #             "permission": "Người dùng không có quyền xem tài sản"
-        #         }
-        #     }, status=403)
-
         # Lấy tất cả tài sản từ database
         taisan_list = TaiSan.objects.all()
         
@@ -285,16 +275,6 @@ def tinh_tai_san_moi_nhan_vien(request):
                 }
             }, status=403)
         '''
-        # Kiểm tra quyền xem thống kê tài sản (tuỳ chọn)
-        # if not request.user.has_perm('mysite.view_taisan'):
-        #     return JsonResponse({
-        #         "thanh_cong": False,
-        #         "thong_bao": "Không có quyền truy cập tài nguyên này.",
-        #         "ma_loi": {
-        #             "permission": "Người dùng không có quyền xem thống kê tài sản"
-        #         }
-        #     }, status=403)
-
         # Lấy tất cả nhân viên
         try:
             nhanvien_list = NhanVien.objects.all()
@@ -521,16 +501,6 @@ def tao_tai_san(request):
                 }
             }, status=403)
         '''
-        # Kiểm tra quyền tạo tài sản
-        # if not request.user.has_perm('mysite.add_taisan'):
-        #     return JsonResponse({
-        #         "thanh_cong": False,
-        #         "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
-        #         "ma_loi": {
-        #             "quyen_truy_cap": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này."
-        #         }
-        #     }, status=403)
-
         # Parse JSON data từ request body
         try:
             data = json.loads(request.body)
