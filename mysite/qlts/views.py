@@ -31,6 +31,14 @@ def xoa_tai_san(request, id):
                     "ma_tai_san": id
                 }
             })
+        except PermissionDenied:
+            return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
+            "ma_loi": {
+                "permission": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
+            }
+        }, status=403)
         except TaiSan.DoesNotExist:
             return JsonResponse({
                 "thanh_cong": False,
@@ -141,6 +149,14 @@ def cap_nhat_tai_san(request, id):
                 }
             }
         })
+    except PermissionDenied:
+            return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
+            "ma_loi": {
+                "permission": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
+            }
+        }, status=403)
     except Exception as e:
         return JsonResponse({
             "thanh_cong": False,
@@ -186,7 +202,14 @@ def chi_tiet_tai_san(request, id):
                 "id": "Không tồn tại ID này"
             }
         }, status=404)
-    
+    except PermissionDenied:
+            return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Bạn không có quyền truy cập tài nguyên này.",
+            "ma_loi": {
+                "permission": "Tài khoản hiện tại không đủ quyền để thực hiện hành động này.",
+            }
+        }, status=403)
     except Exception:
         return JsonResponse({
             "thanh_cong": False,
