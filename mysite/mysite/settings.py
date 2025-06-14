@@ -129,5 +129,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'EXCEPTION_HANDLER': 'qlts.exceptions.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'qlts.exceptions.custom_exception_handler',
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',  # chỉ trả về JSON
+    ]
 }
