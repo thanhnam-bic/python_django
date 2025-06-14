@@ -1,6 +1,4 @@
 from django.test import TestCase
-
-# Create your tests here.
 import json
 from rest_framework.test import APIClient
 from qlts.models import TaiSan, DanhMuc, NhanVien, NhaSanXuat, NhaCungCap
@@ -58,6 +56,11 @@ class TaiSanAPITestCase(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()["du_lieu"]["ma_tai_san"], "TS001")
 
+    def test_thong_ke_tai_san_nhan_vien(self):
+        res = self.client.get(f"/qlts/api/tinh_tai_san_nhan_vien/")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()["thong_bao"], "Thống kê thành công")
+
     def test_tao_tai_san(self):
         payload = {
             "ma_tai_san": "TS006",
@@ -79,6 +82,6 @@ class TaiSanAPITestCase(TestCase):
         token1 = str(RefreshToken.for_user(user1).access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token1}")
 
-        # Thử xóa tài sản
+        # Thử xóa tài sản và kiểm tra quyền truy cập
         res = self.client.delete(f"/qlts/api/xoa_tai_san/{self.taisan.ma_tai_san}/")
         self.assertEqual(res.status_code, 403)
