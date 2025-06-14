@@ -1,16 +1,14 @@
 from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
 from .models import TaiSan, DanhMuc, NhanVien, NhaSanXuat, NhaCungCap
-from django.views.decorators.csrf import csrf_exempt
 import json
-from django.views.decorators.http import require_http_methods
 import logging
-from django.core.exceptions import PermissionDenied
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .permissions import Kiem_Tra_Phan_Quyen_User
+from .qlts_thong_ke_tai_san_nhan_vien.qlts_thong_ke_tai_san_nhan_vien import TinhTaiSanNhanVien
 
 # View index - Trang chủ của ứng dụng
 def index(request):
@@ -160,7 +158,7 @@ def chi_tiet_tai_san(request, id):
             "ma_tai_san": asset.ma_tai_san,
             "ten_tai_san": asset.ten_tai_san,
             "so_serial": asset.so_serial,
-            "gia_mua": float(asset.gia_mua),
+            "gia_mua": f"{asset.gia_mua:,.0f} VND",
             "danh_muc": {
                 "ten_danh_muc": asset.danh_muc.danh_muc if asset.danh_muc else None
             },
@@ -216,7 +214,7 @@ def lay_tat_ca_tai_san(request):
                     'ma_tai_san': taisan.ma_tai_san,
                     'ten_tai_san': taisan.ten_tai_san,
                     'so_serial': taisan.so_serial,
-                    'gia_mua': float(taisan.gia_mua),
+                    'gia_mua': f"{taisan.gia_mua:,.0f} VND",
                     'danh_muc': {
                         'ten_danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
                     } if taisan.danh_muc else None,
@@ -330,7 +328,7 @@ def tinh_tai_san_moi_nhan_vien(request):
                             'ma_tai_san': taisan.ma_tai_san,
                             'ten_tai_san': taisan.ten_tai_san,
                             'so_serial': taisan.so_serial,
-                            'gia_mua': float(taisan.gia_mua),
+                            'gia_mua': f"{taisan.gia_mua:,.0f} VND",
                             'danh_muc': {
                                 'ten_danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
                             } if taisan.danh_muc else None,
@@ -352,7 +350,7 @@ def tinh_tai_san_moi_nhan_vien(request):
                             'ma_tai_san': taisan.ma_tai_san,
                             'ten_tai_san': taisan.ten_tai_san,
                             'so_serial': taisan.so_serial,
-                            'gia_mua': float(taisan.gia_mua),
+                            'gia_mua': f"{taisan.gia_mua:,.0f} VND",
                         }
                         tai_san_data.append(taisan_data)
                 
@@ -393,7 +391,7 @@ def tinh_tai_san_moi_nhan_vien(request):
                             'ma_tai_san': taisan.ma_tai_san,
                             'ten_tai_san': taisan.ten_tai_san,
                             'so_serial': taisan.so_serial,
-                            'gia_mua': float(taisan.gia_mua),
+                            'gia_mua': f"{taisan.gia_mua:,.0f} VND",
                             'danh_muc': {
                                 'ten_danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
                             } if taisan.danh_muc else None,
@@ -415,7 +413,7 @@ def tinh_tai_san_moi_nhan_vien(request):
                             'ma_tai_san': taisan.ma_tai_san,
                             'ten_tai_san': taisan.ten_tai_san,
                             'so_serial': taisan.so_serial,
-                            'gia_mua': float(taisan.gia_mua),
+                            'gia_mua': f"{taisan.gia_mua:,.0f} VND",
                         }
                         tai_san_chua_phan_data.append(taisan_data)
             else:
@@ -585,7 +583,7 @@ def tao_tai_san(request):
                 'ma_tai_san': taisan.ma_tai_san,
                 'ten_tai_san': taisan.ten_tai_san,
                 'so_serial': taisan.so_serial,
-                'gia_mua': float(taisan.gia_mua),
+                'gia_mua': f"{taisan.gia_mua:,.0f} VND",
                 'danh_muc': {
                     'ten_danh_muc': taisan.danh_muc.danh_muc if taisan.danh_muc else None,
                 } if taisan.danh_muc else None,
@@ -606,7 +604,7 @@ def tao_tai_san(request):
                 'ma_tai_san': taisan.ma_tai_san,
                 'ten_tai_san': taisan.ten_tai_san,
                 'so_serial': taisan.so_serial,
-                'gia_mua': float(taisan.gia_mua),
+                'gia_mua': f"{taisan.gia_mua:,.0f} VND",
             }
 
         return JsonResponse({
@@ -619,6 +617,23 @@ def tao_tai_san(request):
     except Exception as e:
         # Xử lý lỗi 500 - Internal Server Error
         logger.error(f"Lỗi server khi tạo tài sản: {str(e)}")
+        return JsonResponse({
+            "thanh_cong": False,
+            "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau",
+        }, status=500)
+        
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([Kiem_Tra_Phan_Quyen_User])
+def tinh_tai_san_nhan_vien(request):
+    try:
+        thong_ke = TinhTaiSanNhanVien()
+        result = thong_ke.get(request)
+        return JsonResponse(result, status=result.get("status_code", 200))
+    except Exception as e:
+        logger.error(f"Lỗi server khi lấy thống kê tài sản: {str(e)}")
         return JsonResponse({
             "thanh_cong": False,
             "thong_bao": "Đã xảy ra lỗi không mong muốn trên máy chủ. Vui lòng thử lại sau",
