@@ -58,3 +58,5 @@ Bước 4: Bấm Enter ( để insert dữ liệu vô file db.sqlite3)
 Bước 5: Chạy lệnh
 
 -------------------------------------------
+
+Github repository: https://github.com/thanhnam-bic/python_django
