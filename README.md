@@ -59,7 +59,7 @@ Bước 5: Chạy lệnh
 
 -------------------------------------------
 ## VI/ Lệnh chạy file testc.py( Unit Test)
-Bước 1: Mở terminal (\python_django\mysite)
+Bước 1: Mở terminal (\python_django\mysite)  
 Bước 2: Chạy lệnh
 ```bash
 python manage.py test
