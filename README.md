@@ -58,5 +58,19 @@ Bước 4: Bấm Enter ( để insert dữ liệu vô file db.sqlite3)
 Bước 5: Chạy lệnh
 
 -------------------------------------------
+## VI/ Lệnh chạy file testc.py( Unit Test)
+Bước 1: Mở terminal (\python_django\mysite)
+Bước 2: Chạy lệnh
+```bash
+python manage.py test
+```
+Bước 3: Chạy lệnh
+```bash
+python manage.py runserver
+```
+Bước 4: Vô Postman và sử dụng hàm get tính tài sản mỗi nhân viên
+
+
+-------------------------------------------
 
 Github repository: https://github.com/thanhnam-bic/python_django
