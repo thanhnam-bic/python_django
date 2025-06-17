@@ -1,4 +1,5 @@
 ### Admin page: http://127.0.0.1:8000/admin/
+### Tài khoản admin test api login ( TK: admin & MK: 12345678)
 ## I/ Insert thư viện djangorestframework và thư viện JWT (JSON Web Token)
 Bước 1: Mở terminal (\python_django\mysite)  
 Bước 2: chạy lệnh
